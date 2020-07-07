@@ -1,0 +1,71 @@
+package com.entity;
+
+import lombok.Data;
+
+@Data
+public class Response {
+
+        String result;
+        String items;
+        String resultdesc;
+        String resno;
+        String crsno;
+        String accnt;
+        String guestshare;
+        String rmrate;
+        String rate;
+        String ratecode;
+        String packages;
+        String market;
+        String source;
+        String channel;
+        String restype;
+        String specials;
+        String secrecy;
+        String nopospost;
+        String groupno;
+        String company;
+        String agency;
+        String bcenter;
+        String child;
+        String arrival;
+        String departure;
+        String adults;
+        String payMethod;
+        String roomno;
+        String roomsta;
+        String roomtype;
+        String roomtypename;
+        String haccnt;
+        String fname;
+        String lname;
+        String name;
+        String name_all;
+        String idcode;
+        String idno;
+        String race;
+        String sex;
+        String birth;
+        String street;
+        String city;
+        String postalCode;
+        String country;
+        String cardno;
+        String cardtype;
+        String roomfeatures;
+        String mobile;
+        String phone;
+        String language;
+        String guestremark;
+        String masterremark;
+        String billremark;
+        String creditcard;
+        String ratedetail;
+        String totalrates;
+        String packagedetail;
+        String credit;
+        String balance;
+        String aliref;
+        String is_creditckin;
+        String doorcardnum;
+}

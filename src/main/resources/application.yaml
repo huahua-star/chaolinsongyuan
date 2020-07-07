@@ -1,0 +1,95 @@
+server:
+  port: 8088
+spring:
+  datasource:
+    #url: jdbc:mysql://localhost:3307/westsoft?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+    url: jdbc:mysql://119.2.7.45:3307/westsoft?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+    username: root
+    #password: hejiahua
+    password: yuntu@163
+    driver-class-name: com.mysql.jdbc.Driver
+    validationQuery: SELECT 1 FROM DUAL
+  rabbitmq:
+    #host: 10.129.6.251
+    host: 127.0.0.1
+    port: 5672
+    username: admin
+    password: admin
+    #password: admin
+    publisher-confirms: true
+    publisher-returns: true
+
+    listener:
+      simple:
+        acknowledge-mode: manual #采用手动应答模式；
+        concurrency: 1 #指定最小的消费数量；
+        max-concurrency: 1 #指定最大的消费数量；
+        retry:
+          enabled: true
+
+
+alipay:
+  apikey: "00014005"
+
+admin:
+  adress: http://10.129.6.250:8090/roomimg/getImages?path=
+qrDir: D:/
+
+mybatis-plus:
+  mapper-locations: classpath*:com/mapper/xml/*.xml
+  global-config:
+    banner: false
+    db-config:
+      id-type: 4
+      table-underline: true
+
+#sdk 发卡机 串口
+sdk:
+  ComHandle: 3
+#  ComHandle: 2
+#读卡器  串口
+sdk1:
+  ComHandle: 7
+
+dapuPort: 7
+
+print:
+  hotelname: 朝林松源酒店
+  phone: 010-53876999
+  leave: 12:00
+  #图片路径
+  imgurl: E:\\Thelog\\ceshi.jpg
+Invoiqr:
+  #由电子发票平台分配的appCode
+  appCode: PTTEST17
+  #调用方纳税人识别号
+  taxpayerCode: 91370200264807TEST4A
+  #证书路径
+  keyStorePath: D:/PTTEST17.keystore
+  #证书别名
+  keyStoreAbner: PTTEST17
+  #证书密码
+  keyStorePassWord: PTTEST17
+  #发票接口
+  facadeUrl: https://www.chinaeinv.com:943/igs/api/orderApi.jspa
+
+EacAddress: http://127.0.0.1:8091
+hotelID: 1
+
+#人证合一 实时人像图片留存地址
+timeImgUrl: D:\\image\\
+
+
+logoimgUrl: C:\\Users\\123\\Desktop\\logo.jpg
+pdfUrl: D:\\bill\\
+
+Email:
+  #个人HOST
+  HOST: smtp.163.com
+  #企业HOST
+  #HOST: smtphz.qiye.163.com
+  FROM: 18749195329@163.com
+  USER: 18749195329@163.com
+  PWD: hejiahua182018
+  SUBJECT: 账单消费明细
+  AFFIXNAME: pdf.pdf
