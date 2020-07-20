@@ -10,6 +10,7 @@ import com.jacob.com.Dispatch;
 import com.jacob.com.Variant;
 import com.service.ITblTxnpService;
 import com.utils.DaPuWeiDa;
+import com.utils.EmailUtil;
 import com.utils.Http.HttpUtil;
 import com.utils.ReturnNullOrKong;
 import com.utils.Returned2.AutoLog;
@@ -49,6 +50,26 @@ public class CardController {
     private String leave;
     @Value("${dapuPort}")
     private int dapuPort;
+    @Value("${Email.HOST}")
+    private String HOST;
+
+    @Value("${Email.FROM}")
+    private String FROM;
+
+    @Value("${Email.AFFIXNAME}")
+    private String AFFIXNAME;
+
+    @Value("${Email.USER}")
+    private String USER;
+
+    @Value("${Email.PWD}")
+    private String PWD;
+
+    @Value("${Email.SUBJECT}")
+    private String SUBJECT;
+
+    @Value("${Email.cardEmail}")
+    private String cardEmail;
 
     @Autowired
     private RabbitHelper rabbitHelper;
@@ -60,10 +81,57 @@ public class CardController {
     @Autowired
     private ITblTxnpService tblTxnpService;
 
+
+
+    /**
+     * 发送自助机无卡邮件
+     */
+    @ApiOperation(value = "发送自助机无卡邮件")
+    @RequestMapping(value = "/sendEmailNoCard", method = RequestMethod.GET)
+    public Result<?> sendEmailNoCard(String TO) {
+        String[] TOS=TO.split(",");
+        EmailUtil.send("自助机无卡，请快速补充！",
+                HOST,FROM,"",AFFIXNAME,USER,PWD,"无卡通知",TOS);
+        return Result.ok("成功");
+    }
+
+
     @RequestMapping("/testCardRabbit")
     public void testCardRabbit() {
         String cardStr = "设备即将无卡请检测。";
         rabbitHelper.startThread(this.rabbitTemplate,cardQueue,cardStr);
+    }
+
+
+    @GetMapping(value = "/checks")
+    public Result<Object> checks() {
+        Result<Object> result = new Result<>();
+        log.info("check()方法");
+        try {
+            // 打开发卡机
+            log.info("检测发卡机是否有卡");
+            K7X0Util.open(comHandle);
+            // 检测发卡机是否预空
+            boolean isEmpty = check(2, 0x31);
+            if (isEmpty) {
+                log.info("发卡机卡箱预空,即将无卡");
+            }
+            // 检测发卡机是否有卡
+            isEmpty = check(3, 0x38);
+            if (isEmpty) {
+                // 发卡失败
+                log.info("发卡失败失败数据加入数据库中");
+                log.info("sendCard()方法结束return:{卡箱已空}");
+                sendEmailNoCard(cardEmail);
+                return SetResultUtil.setErrorMsgResult(result, "发卡机卡箱已空");
+            }
+            log.info("check()方法结束");
+            return SetResultUtil.setSuccessResult(result, "有卡");
+        } catch (Exception e) {
+            log.error("sendCard()出现异常error:{}", e.getMessage());
+            K7X0Util.regain();
+            return SetResultUtil.setExceptionResult(result, "sendCard");
+        }
     }
 
 
@@ -93,6 +161,7 @@ public class CardController {
                 // 发卡失败
                 log.info("发卡失败失败数据加入数据库中");
                 log.info("sendCard()方法结束return:{卡箱已空}");
+                sendEmailNoCard(cardEmail);
                 return SetResultUtil.setErrorMsgResult(result, "发卡机卡箱已空");
             }
             while (check(3, 0x31)) {

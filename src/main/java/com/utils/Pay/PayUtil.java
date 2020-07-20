@@ -10,16 +10,30 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class PayUtil {
-    private static String opSys="2";
+    /*private static String opSys="2";
     private static String characterSet="00";
-    private static String orgNo="11658";//机构号
-    private static String mercId="800290000007906";//商户号
-    private static String trmNo="XB006439";//设备号
+    private static String orgNo="518";//机构号
+    private static String mercId="800290000015948";//商户号
+    private static String trmNo="XB033766";//设备号
     private static String signType="MD5";//签名方式
     private static String ordinaryVersion="V1.0.5";//普通支付版本号
     private static String preVersion="V1.0.2";//预授权支付版本号
     private static String tuikuanVersion="V1.0.0";//退款版本号
-    private static String signKey="9FF13E7726C4DFEB3BED750779F59711";
+    private static String signKey="C286D0E61C6989596A23B654FDCAB361";*/
+    private static String gongyongurl="https://gateway.starpos.com.cn/adpservice/";
+    private static String opSys="2";
+    private static String characterSet="00";
+    private static String orgNo="80516";//机构号
+    private static String mercId="800110000082730";//商户号
+    private static String trmNo="XB944063";//设备号
+    private static String signType="MD5";//签名方式
+    private static String ordinaryVersion="V1.0.5";//普通支付版本号
+    private static String preVersion="V1.0.2";//预授权支付版本号
+    private static String tuikuanVersion="V1.0.0";//退款版本号
+    private static String signKey="AA83CA32E334399362CD1C19AD0A7157";
+
+
+
     /**
      * 测试
      */
@@ -126,11 +140,11 @@ public class PayUtil {
         paramMap.put("orgNo",orgNo);
         paramMap.put("mercId",mercId);
         paramMap.put("trmNo",trmNo);
-        String txnTime=new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        String txnTime=new SimpleDateFormat("yyyyMMddHHmmsss").format(new Date());
         paramMap.put("txnTime",txnTime);
         paramMap.put("signType",signType);
         paramMap.put("version",paytype==0?ordinaryVersion:preVersion);
-        String tradeNo= txnTime;
+        String tradeNo= UUID.randomUUID().toString().replaceAll("-","");
         paramMap.put("tradeNo",tradeNo);
         String daiSign=getMapToStringOnlyValue(paramMap);
         daiSign+=signKey;
@@ -139,12 +153,14 @@ public class PayUtil {
         String param="{"+getMapToString(paramMap)+"}";
         System.out.println("param:"+param);
         String returnResult=sendPost(url,param,tradeNo,signValue,txnTime,paytype==0?ordinaryVersion:preVersion);
-        JSONObject jsonObj = JSONObject.parseObject(returnResult);
+        System.out.println("returnResult:"+returnResult);
+        /*JSONObject jsonObj = JSONObject.parseObject(returnResult);
         String message = jsonObj.get("message").toString();
         message=URLDecoder.decode(message,"UTF-8");
-        System.out.println("message:"+message);
+        System.out.println("message:"+message);*/
         return returnResult;
     }
+
     /**
      *  自助机扫描客户出示的付款码付款
      * @param qryNo  第三方的流水号
@@ -158,11 +174,11 @@ public class PayUtil {
         paramMap.put("orgNo",orgNo);
         paramMap.put("mercId",mercId);
         paramMap.put("trmNo",trmNo);
-        String txnTime=new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        String txnTime=new SimpleDateFormat("yyyyMMddHHmmsss").format(new Date());
         paramMap.put("txnTime",txnTime);
         paramMap.put("signType",signType);
         paramMap.put("version",paytype==0?ordinaryVersion:preVersion);
-        String tradeNo= txnTime;
+        String tradeNo= UUID.randomUUID().toString().replaceAll("-","");
         paramMap.put("tradeNo",tradeNo);
         String daiSign=getMapToStringOnlyValue(paramMap);
         daiSign+=signKey;
@@ -200,11 +216,11 @@ public class PayUtil {
         paramMap.put("orgNo",orgNo);
         paramMap.put("mercId",mercId);
         paramMap.put("trmNo",trmNo);
-        String txnTime=new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        String txnTime=new SimpleDateFormat("yyyyMMddHHmmsss").format(new Date());
         paramMap.put("txnTime",txnTime);
         paramMap.put("signType",signType);
         paramMap.put("version",tuikuanVersion);
-        String tradeNo= txnTime;
+        String tradeNo= UUID.randomUUID().toString().replaceAll("-","");
         paramMap.put("tradeNo",tradeNo);
         String daiSign=getMapToStringOnlyValue(paramMap);
         daiSign+=signKey;
@@ -214,7 +230,8 @@ public class PayUtil {
         paramMap.put("signValue",signValue);
         String param="{"+getMapToString(paramMap)+"}";
         System.out.println("param:"+param);
-        String returnResult=sendPost("http://sandbox.starpos.com.cn/adpweb/ehpspos3/sdkRefundBarcodePay.json",param,tradeNo,signValue,txnTime,tuikuanVersion);
+        //String returnResult=sendPost("http://sandbox.starpos.com.cn/adpweb/ehpspos3/sdkRefundBarcodePay.json",param,tradeNo,signValue,txnTime,tuikuanVersion);
+        String returnResult=sendPost(gongyongurl+"sdkRefundBarcodePay.json",param,tradeNo,signValue,txnTime,tuikuanVersion);
         System.out.println("returnResult:"+returnResult);
         JSONObject jsonObj = JSONObject.parseObject(returnResult);
         String message = jsonObj.get("message").toString();
@@ -247,11 +264,11 @@ public class PayUtil {
         paramMap.put("orgNo",orgNo);
         paramMap.put("mercId",mercId);
         paramMap.put("trmNo",trmNo);
-        String txnTime=new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        String txnTime=new SimpleDateFormat("yyyyMMddHHmmsss").format(new Date());
         paramMap.put("txnTime",txnTime);
         paramMap.put("signType",signType);
         paramMap.put("version",preVersion);
-        String tradeNo= txnTime;
+        String tradeNo= UUID.randomUUID().toString().replaceAll("-","");
         paramMap.put("tradeNo",tradeNo);
         String daiSign=getMapToStringOnlyValue(paramMap);
         daiSign+=signKey;
@@ -261,7 +278,8 @@ public class PayUtil {
         paramMap.put("signValue",signValue);
         String param="{"+getMapToString(paramMap)+"}";
         System.out.println("参数:"+param);
-        String returnResult=sendPost("http://sandbox.starpos.com.cn/adpservice/sdkCompleteEmp.json",param,tradeNo,signValue,txnTime,preVersion);
+        //String returnResult=sendPost("http://sandbox.starpos.com.cn/adpservice/sdkCompleteEmp.json",param,tradeNo,signValue,txnTime,preVersion);
+        String returnResult=sendPost(gongyongurl+"sdkCompleteEmp.json",param,tradeNo,signValue,txnTime,preVersion);
         System.out.println("返回值:"+returnResult);
         JSONObject jsonObj = JSONObject.parseObject(returnResult);
         String message = jsonObj.get("message").toString();
@@ -292,11 +310,11 @@ public class PayUtil {
         paramMap.put("orgNo",orgNo);
         paramMap.put("mercId",mercId);
         paramMap.put("trmNo",trmNo);
-        String txnTime=new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        String txnTime=new SimpleDateFormat("yyyyMMddHHmmsss").format(new Date());
         paramMap.put("txnTime",txnTime);
         paramMap.put("signType",signType);
         paramMap.put("version",preVersion);
-        String tradeNo= txnTime;
+        String tradeNo=UUID.randomUUID().toString().replaceAll("-","");
         paramMap.put("tradeNo",tradeNo);
         String daiSign=getMapToStringOnlyValue(paramMap);
         daiSign+=signKey;
@@ -306,7 +324,8 @@ public class PayUtil {
         paramMap.put("signValue",signValue);
         String param="{"+getMapToString(paramMap)+"}";
         System.out.println("参数:"+param);
-        String returnResult=sendPost("http://sandbox.starpos.com.cn/adpservice/sdkEmpCancel.json",param,tradeNo,signValue,txnTime,preVersion);
+        //String returnResult=sendPost("http://sandbox.starpos.com.cn/adpservice/sdkEmpCancel.json",param,tradeNo,signValue,txnTime,preVersion);
+        String returnResult=sendPost(gongyongurl+"sdkEmpCancel.json",param,tradeNo,signValue,txnTime,preVersion);
         System.out.println("返回值:"+returnResult);
         JSONObject jsonObj = JSONObject.parseObject(returnResult);
         String message = jsonObj.get("message").toString();
@@ -338,11 +357,11 @@ public class PayUtil {
         paramMap.put("orgNo",orgNo);
         paramMap.put("mercId",mercId);
         paramMap.put("trmNo",trmNo);
-        String txnTime=new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
+        String txnTime=new SimpleDateFormat("yyyyMMddHHmmsss").format(new Date());
         paramMap.put("txnTime",txnTime);
         paramMap.put("signType",signType);
         paramMap.put("version",preVersion);
-        String tradeNo= txnTime;
+        String tradeNo= UUID.randomUUID().toString().replaceAll("-","");
         paramMap.put("tradeNo",tradeNo);
         String daiSign=getMapToStringOnlyValue(paramMap);
         daiSign+=signKey;
@@ -352,7 +371,7 @@ public class PayUtil {
         paramMap.put("signValue",signValue);
         String param="{"+getMapToString(paramMap)+"}";
         System.out.println("参数:"+param);
-        String returnResult=sendPost("http://sandbox.starpos.com.cn/adpservice/sdkComEmpCancel.json",param,tradeNo,signValue,txnTime,preVersion);
+        String returnResult=sendPost(gongyongurl+"sdkComEmpCancel.json",param,tradeNo,signValue,txnTime,preVersion);
         System.out.println("返回值:"+returnResult);
         JSONObject jsonObj = JSONObject.parseObject(returnResult);
         String message = jsonObj.get("message").toString();

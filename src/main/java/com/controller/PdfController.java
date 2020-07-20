@@ -1,5 +1,6 @@
 package com.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.entity.Bill;
 import com.entity.HotelSetTable;
 import com.entity.Reservation;
@@ -9,15 +10,19 @@ import com.itextpdf.text.pdf.PdfPageEvent;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.events.PdfPageEventForwarder;
 import com.lowagie.text.HeaderFooter;
+import com.service.ReservationService;
 import com.utils.EmailUtil;
 import com.utils.MyHeaderFooter;
+import com.utils.PageFooter;
 import com.utils.Returned.CommonResult;
 import com.utils.Returned2.Result;
 import com.utils.pdfReport;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,10 +31,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Writer;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+
 @Slf4j
 @Api(tags = "pdf")
 @RestController
@@ -39,6 +44,8 @@ public class PdfController {
 
     @Value("${pdfUrl}")
     private String pdfUrl;
+    @Value("${reservationMonthUrl}")
+    private String reservationMonthUrl;
 
     @Value("${logoimgUrl}")
     private String logoimgUrl;
@@ -60,6 +67,12 @@ public class PdfController {
 
     @Value("${Email.SUBJECT}")
     private String SUBJECT;
+
+    @Value("${Email.reservationEmail}")
+    private String reservationEmail;
+
+    @Autowired
+    private ReservationService reservationService;
 
     /**
      * 生成账单PDF
@@ -153,8 +166,91 @@ public class PdfController {
     @RequestMapping(value = "/sendEmailPdf", method = RequestMethod.GET)
     public Result<?> sendEmailPdf(String TO,String AFFIX) {
         String[] TOS=TO.split(",");
-        EmailUtil.send("账单消费明细",HOST,FROM,AFFIX,AFFIXNAME,USER,PWD,SUBJECT,TOS);
+        EmailUtil.send(" 尊敬的客人/Dear guest：\r\n" +
+                "      您好！非常感谢您选择北京朝林松源酒店，我们很荣幸能为您提供服务，" +
+                "附件是您的账单信息请查收，有任何问题请您随时与我们联系，谢谢！\r\n" +
+                "      Thank you for choosing Zhaolin Grand Hotel Beijing！It is our great honor to serve you,please kindly find your detail folio as attachment,any concern please feel free to contact us,thank you!",
+                HOST,FROM,AFFIX,AFFIXNAME,USER,PWD,SUBJECT,TOS);
         return Result.ok("成功");
+    }
+
+
+    /*
+     * 生成自助机每月订单PDF
+     */
+    @ApiOperation(value = "生成自助机每月订单PDF")
+    @RequestMapping(value = "/createReservationMonthPdf", method = RequestMethod.GET)
+    public Result<?> createReservationMonthPdf() {
+        //获取上月
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM");
+        Date date=new Date();
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.MONTH,calendar.get(Calendar.MONTH)-1);
+        date=calendar.getTime();
+        String month=format.format(date);
+        System.out.println("month:"+month);
+        try {
+            String filePath=reservationMonthUrl+month+".pdf";
+            System.out.println("filePath:"+filePath);
+            // 1.新建document对象
+            Document document = new Document(PageSize.A4);// 建立一个Document对象
+            // 2.建立一个书写器(Writer)与document对象关联
+            File file = new File(filePath);
+            file.createNewFile();
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(file));
+            PageFooter pageFooter=new PageFooter();
+            writer.setPageEvent(pageFooter);
+            // 3.打开文档
+            document.open();
+            month=new SimpleDateFormat("yyyy/MM").format(date);
+            String beginTime=month+"/01 00:00";
+            String endTime=month+"/31 24:00";
+            List<Reservation> list=reservationService.list(new QueryWrapper<Reservation>().between("departure", beginTime,endTime));
+            for (Reservation reservation : list){
+                reservation.setSta(getStatus(reservation.getSta()));
+            }
+            ArrayList<Reservation> reservationList=(ArrayList<Reservation>) list;
+            // 4.向文档中添加内容
+            new pdfReport().generateReservationPDF(document,reservationList,month,list.size()+"",logoimgUrl);
+            // 5.关闭文档
+            document.close();
+            return Result.ok(filePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("失败");
+        }
+    }
+    //@Scheduled(cron = "0 0 1 1 * ?")
+    public void sendEmail(){
+        log.info("生成订单");
+        createReservationMonthPdf();
+        log.info("发送邮箱");
+        String[] TOS=new String[]{reservationEmail};
+        //获取上月
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM");
+        Date date=new Date();
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.MONTH,calendar.get(Calendar.MONTH)-1);
+        date=calendar.getTime();
+        String fileName=format.format(date)+".pdf";
+        String filePath=reservationMonthUrl+fileName;
+        EmailUtil.send(format.format(date)+"月自助机订单统计",HOST,FROM,filePath,fileName,USER,PWD,format.format(date)+"月自助机订单统计",TOS);
+    }
+
+    public static String getStatus(String status){
+        Map<String,String> map=new HashMap<>();
+        map.put("I","在住");
+        map.put("R","预定");
+        map.put("O","结账");
+        map.put("X","取消");
+        map.put("S","临时挂账");
+        map.put("D","昨日结账");
+        map.put("N","预定未到");
+        map.put(null,"无订单状态");
+        map.put("","无订单状态");
+        return map.get(status);
     }
 
 }

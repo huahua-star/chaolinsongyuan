@@ -15,6 +15,7 @@ import com.utils.Returned2.Result;
 import com.utils.Returned2.ReturnCode;
 import com.utils.Returned2.ReturnMessage;
 import com.utils.Returned2.SetResultUtil;
+import com.utils.Returned3.R;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,7 @@ public class PayController {
 
     static char[] strMemo = new char[1024];
 
+    private static String url="https://gateway.starpos.com.cn/adpservice/";
     /**
      * 条码普通支付
      */
@@ -52,17 +54,20 @@ public class PayController {
                                      String authCode, String payChannel, String paytype) {
 
         Map<String,String> payUrlMap=new HashMap<>();
-        payUrlMap.put("0","http://sandbox.starpos.com.cn/adpweb/ehpspos3/sdkBarcodePay.json");//普通支付地址
-        payUrlMap.put("1","http://sandbox.starpos.com.cn/adpservice/sdkBarcodeEmp.json");//预授权支付地址
+        //payUrlMap.put("0","http://sandbox.starpos.com.cn/adpweb/ehpspos3/sdkBarcodePay.json");//普通支付地址
+        //payUrlMap.put("1","http://sandbox.starpos.com.cn/adpservice/sdkBarcodeEmp.json");//预授权支付地址
+        payUrlMap.put("0",url+"sdkBarcodePay.json");//普通支付地址
+        payUrlMap.put("1",url+"sdkBarcodeEmp.json");//预授权支付地址
 
         System.out.println("预订单号:"+orderId);
         System.out.println("支付金额:"+amount);
         Result<Object> result = new Result<Object>();
         log.info("barcodePay()方法amount:{}orderId:{}",amount,orderId);
-        try {
-            String returnResult= PayUtil.sdkBarcodePay(amount,total_amount,authCode,payChannel,payUrlMap.get(paytype),Integer.parseInt(paytype));
-            System.out.println("returnResult:"+returnResult);
-            JSONObject jsonObj = JSONObject.parseObject(returnResult);
+        String returnResult=null;
+        JSONObject jsonObj =null;
+        try{
+            returnResult= PayUtil.sdkBarcodePay(amount,total_amount,authCode,payChannel,payUrlMap.get(paytype),Integer.parseInt(paytype));
+            jsonObj = JSONObject.parseObject(returnResult);
             String returnCode=jsonObj.get("returnCode").toString();
             if ("000000".equals(returnCode)){
                 String orderNo=jsonObj.get("orderNo").toString();//支付渠道订单号
@@ -103,8 +108,10 @@ public class PayController {
     public Result<TblTxnp> query_order(String orderNo,String paytype) {
         log.info("进入query_order()方法orderNo:{}",orderNo);
         Map<String,String> payQueryUrlMap=new HashMap<>();
-        payQueryUrlMap.put("0","http://sandbox.starpos.com.cn/adpweb/ehpspos3/sdkQryBarcodePay.json");//普通支付地址
-        payQueryUrlMap.put("1","http://sandbox.starpos.com.cn/adpservice/sdkQryBarcodePay.json");//预授权支付地址
+        /*payQueryUrlMap.put("0","http://sandbox.starpos.com.cn/adpweb/ehpspos3/sdkQryBarcodePay.json");//普通支付地址
+        payQueryUrlMap.put("1","http://sandbox.starpos.com.cn/adpservice/sdkQryBarcodePay.json");//预授权支付地址*/
+        payQueryUrlMap.put("0",url+"sdkQryBarcodePay.json");//普通支付地址
+        payQueryUrlMap.put("1",url+"sdkQryBarcodePay.json");//预授权支付地址
 
         Result<TblTxnp> result = new Result<TblTxnp>();
         try {

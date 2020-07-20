@@ -90,6 +90,29 @@ public class PrintController {
         }
     }
 
+    @ApiOperation(value = "testInvoice", httpMethod = "GET")
+    @RequestMapping(value = "/testInvoice", method = RequestMethod.GET)
+    public R testInvoice(String amount,String reservationNumber) throws Exception {
+        Invoiqr i = new Invoiqr();
+        //打印电子发票开票
+        Map s = i.getCheckInPerson(amount, qrDir, appCode, taxpayerCode, keyStorePath,
+                keyStoreAbner, keyStorePassWord, facadeUrl, reservationNumber);
+        String orderNo = (String) s.get("orderNo");
+        String url=(String) s.get("url");
+        return  R.ok();
+    }
+
+    @ApiOperation(value = "quiry_order", httpMethod = "GET")
+    @RequestMapping(value = "/quiry_order", method = RequestMethod.GET)
+    public R quiry_order(String orderNo) throws Exception {
+        Invoiqr i = new Invoiqr();
+        //打印电子发票开票
+        String s = i.quiry_order(orderNo, appCode, taxpayerCode, keyStorePath,
+                keyStoreAbner, keyStorePassWord, facadeUrl);
+        System.out.println("s:"+s);
+        return  R.ok();
+    }
+
 
     /**
      * 离店打印发票达谱微打

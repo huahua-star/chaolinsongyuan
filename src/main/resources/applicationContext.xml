@@ -16,12 +16,12 @@
         ">
    <!--ws 消费者端-->
     <!--把 <jaxws:client 当成一个bean-->
-    <jaxws:client id="weather"
-                  serviceClass="com.service.XRHotelServiceSoap"
-                  address="http://60.190.224.119:5039/XRHotelSelf-Gzl-1.4/?wsdl"/>
     <!--<jaxws:client id="weather"
                   serviceClass="com.service.XRHotelServiceSoap"
-                  address="http://10.10.162.66:5031/XRHotelSelf-Gzl/?wsdl"/>-->
+                  address="http://60.190.224.119:5039/XRHotelSelf-Gzl-1.4/?wsdl"/>-->
+    <jaxws:client id="weather"
+                  serviceClass="com.service.XRHotelServiceSoap"
+                  address="http://10.10.162.66:5031/XRHotelSelf-Gzl/?wsdl"/>
 
     <!--address 通过远程获取代理对象-->
 </beans>

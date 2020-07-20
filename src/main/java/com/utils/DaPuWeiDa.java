@@ -4,15 +4,13 @@ package com.utils;
 
 
 import com.dp.printlibs.ds.NormalPrint;
-import com.dp.printlibs.serial.SerialPrint;
 import com.dp.printlibs.util.DataUtils;
 import com.yang.serialport.manager.SerialPortManager;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
 
-import javax.swing.*;
+
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -33,17 +31,17 @@ public class DaPuWeiDa {
         byte[] line4b = NormalPrint.printtext(line4s, 2, 1, 20);
         String line5s=roomNum+"号房间";
         byte[] line5b = NormalPrint.printtext(line5s, 2, 2, 20);
-        String line6s="   WIFI用户名："+roomNum;
+        String line6s="  WIFI用户名："+roomNum;
         byte[] line6b = NormalPrint.printtext(line6s, 1, 1, 20);
-        String line7s="   WiFi密码："+wifiMiMa;
+        String line7s="  WiFi密码："+wifiMiMa;
         byte[] line7b = NormalPrint.printtext(line7s, 1, 1, 20);
-        String line8s="   前台总机："+qiantaiPhone;
+        String line8s="  前台总机："+qiantaiPhone;
         byte[] line8b = NormalPrint.printtext(line8s, 1, 1, 20);
-        String line9s="   预定离店时间："+endTime+" 12:00";
+        String line9s="  预定离店时间："+endTime+" 12:00";
         byte[] line9b = NormalPrint.printtext(line9s, 1, 1, 20);
         String line10s="希望您度过美好的一天!";
         byte[] line10b = NormalPrint.printtext(line10s, 2, 1, 10);
-        String line11s="入住时间:"+new SimpleDateFormat("yyyy-MM-dd hh:mm").format(new Date());
+        String line11s="入住时间:"+new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
         byte[] line11b = NormalPrint.printtext(line11s, 2, 1, 10);
         byte[] guding3=new byte[]{(byte)0x0d,(byte)0x0a,
                 (byte)0x0d,(byte)0x0a};
@@ -67,17 +65,17 @@ public class DaPuWeiDa {
         byte[] line4b = NormalPrint.printtext(line4s, 2, 1, 20);
         String line5s=roomNum+"号房间";
         byte[] line5b = NormalPrint.printtext(line5s, 2, 2, 20);
-        String line6s="   WIFI用户名："+roomNum;
+        String line6s="  WIFI用户名："+roomNum;
         byte[] line6b = NormalPrint.printtext(line6s, 1, 1, 20);
-        String line7s="   WiFi密码："+wifiMiMa;
+        String line7s="  WiFi密码："+wifiMiMa;
         byte[] line7b = NormalPrint.printtext(line7s, 1, 1, 20);
-        String line8s="   前台总机："+qiantaiPhone;
+        String line8s="  前台总机："+qiantaiPhone;
         byte[] line8b = NormalPrint.printtext(line8s, 1, 1, 20);
-        String line9s="   规定离店时间：12:00";
+        String line9s="  规定离店时间：12:00";
         byte[] line9b = NormalPrint.printtext(line9s, 1, 1, 20);
         String line10s="希望您度过美好的一天!";
         byte[] line10b = NormalPrint.printtext(line10s, 2, 1, 10);
-        String line11s="  真实离店时间:"+new SimpleDateFormat("yyyy-MM-dd hh:mm").format(new Date());
+        String line11s="  真实离店时间:"+new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
         byte[] line11b = NormalPrint.printtext(line11s, 2, 1, 10);
         byte[] guding3=new byte[]{(byte)0x0d,(byte)0x0a,
                 (byte)0x0d,(byte)0x0a};
@@ -87,7 +85,9 @@ public class DaPuWeiDa {
         System.out.println("关闭串口成功");
     }
 
+
     public static void printImgVoice(String str,int com,String roomNum,String wifiMiMa,String qiantaiPhone,String leave,String orderNo) throws PortInUseException, UnsupportedEncodingException, DecoderException {
+        System.out.println("str:"+str);
         SerialPort serialPort=SerialPortManager.openPort("COM"+com,115200);
         System.out.println("打开串口成功，"+serialPort.getName());
         String line1s="期待您再次光临";
@@ -100,15 +100,15 @@ public class DaPuWeiDa {
         byte[] line4b = NormalPrint.printtext(line4s, 2, 1, 20);
         String line5s=roomNum+"号房间";
         byte[] line5b = NormalPrint.printtext(line5s, 2, 2, 20);
-        String line6s="   WIFI用户名："+roomNum;
+        String line6s="  WIFI用户名："+roomNum;
         byte[] line6b = NormalPrint.printtext(line6s, 1, 1, 20);
-        String line7s="   WiFi密码："+wifiMiMa;
+        String line7s="  WiFi密码："+wifiMiMa;
         byte[] line7b = NormalPrint.printtext(line7s, 1, 1, 20);
-        String line8s="   前台总机："+qiantaiPhone;
+        String line8s="  前台总机："+qiantaiPhone;
         byte[] line8b = NormalPrint.printtext(line8s, 1, 1, 20);
-        String line19s="   规定离店时间：12:00";
+        String line19s="  规定离店时间：12:00";
         byte[] line19b = NormalPrint.printtext(line19s, 1, 1, 20);
-        String line20s="  真实离店时间:"+new SimpleDateFormat("yyyy-MM-dd hh:mm").format(new Date());
+        String line20s="  真实离店时间:"+new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
         byte[] line20b = NormalPrint.printtext(line20s, 2, 1, 10);
         byte[] buffer = DataUtils.byteArraysToBytes(new byte[][]{line1b, line2b, line3b, line4b, line5b , line6b,line7b,line8b,line19b,line20b});
         SerialPortManager.sendToPort(serialPort,buffer);//打印
@@ -124,7 +124,8 @@ public class DaPuWeiDa {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        byte[] changdu=int2byte(erweima.length);
+        System.out.println("btyeToStr："+new String(erweima));
+        byte[] changdu=int2byte(erweima.length+3);
         byte[] guding1=new byte[]{(byte)0x31,(byte)0x50,(byte)0x30};
         byte[] guding2=new byte[]{
                 (byte)0x1d,(byte)0x28,(byte)0x6b,(byte)0x03,(byte)0x00,(byte)0x31,(byte)0x52,(byte)0x30,

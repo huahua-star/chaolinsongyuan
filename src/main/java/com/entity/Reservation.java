@@ -127,6 +127,18 @@ public class Reservation {
     String guestremark;
     //主单备注信息
     String masterremark;
+    /**
+     * 订单状态 0 表示该订单 需要前台处理 还未被处理
+     *  1 表示该订单 需要前台处理 已被处理
+     *  2 表示该订单 不需要 前台处理
+     */
+    String state;
+    /**
+     * 公安处理状态 0 表示该订单 需要前台处理 还未被处理
+     *  1 公安处理状态 需要前台处理 已被处理
+     *  2 公安处理状态 不需要 前台处理
+     */
+    String gonganstate;
 
     /*String billremark;
     String creditcard;

@@ -10,12 +10,14 @@ import com.google.gson.JsonObject;
 import com.service.*;
 import com.utils.Base64Img;
 import com.utils.Returned.CommonResult;
+import com.utils.Returned3.R;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.XML;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.util.StringUtils;
@@ -52,6 +54,34 @@ public class GetArrivingReservationController {
 
     @Autowired
     private RaceService raceService;
+
+    @Autowired
+    private RabbitHelper rabbitHelper;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    /**
+     * 修改自助机留存订单的 状态
+     */
+    @ApiOperation(value = "修改自助机留存订单的 状态")
+    @RequestMapping(value = "/updateReservation", method = RequestMethod.GET)
+    public CommonResult<?> updateReservation(String accnt,String state,String gonganstate) {
+        log.info("updateReservation()方法");
+        if (StringUtils.isEmpty(accnt)){
+            return CommonResult.failed("缺少参数");
+        }
+        Reservation reservation=reservationService.getOne(new QueryWrapper<Reservation>().eq("accnt",accnt));
+        if (gonganstate!=null&&!"".equals(gonganstate)){
+            reservation.setGonganstate(gonganstate);
+        }
+        if (state!=null&&!"".equals(state)){
+            reservation.setState(state);
+        }
+        reservationService.updateById(reservation);
+        return CommonResult.success("修改成功");
+    }
+
 
     /**
      * 证件  code 转换 中文描述
@@ -465,7 +495,7 @@ public class GetArrivingReservationController {
         log.info("GuestRemoteCheckOut()方法执行结束");
 
         //订单数据留存
-        Reservation reservation=reservationService.getOne(new QueryWrapper<Reservation>().eq("resno",resno));
+        Reservation reservation=reservationService.getOne(new QueryWrapper<Reservation>().eq("accnt",accnt));
         Reservation newReservation= GetOneReservation(accnt);
         if (reservation==null){
             reservationService.save(newReservation);
@@ -1090,9 +1120,34 @@ public class GetArrivingReservationController {
         final XRHotelServiceSoap soap = XRHotels();
         final String s = soap.modifyDep(tom);
         final String jsons = Jsons(s);
+
+        //订单数据留存
+        Reservation reservation=reservationService.getOne(new QueryWrapper<Reservation>().eq("accnt",accnt));
+        Reservation newReservation= GetOneReservation(accnt);
+        if (reservation==null){
+            reservationService.save(newReservation);
+            System.out.println(newReservation);
+        }else{
+            newReservation.setId(reservation.getId());
+            reservationService.updateById(newReservation);
+            System.out.println(newReservation);
+        }
+
         return CommonResult.success(jsons);
 
     }
+
+    private final String stayAlertQueue = "stayAlertQueue";
+    /**
+     * 客人续住 提醒前台 ，某个房间续住提醒
+     */
+    @ApiOperation(value = "客人续住 提醒前台 ，某个房间续住提醒")
+    @RequestMapping(value = "/StayAlert")
+    public void StayAlert(String roomNo){
+        String str = roomNo + "房间已在自助机续住,请前往房间打扫处理！";
+        rabbitHelper.startThread(this.rabbitTemplate,stayAlertQueue,str);
+    }
+
 
 
     /**
@@ -1217,7 +1272,6 @@ public class GetArrivingReservationController {
         final String tempstaSet = soap.tempstaSet(tom);
         final String jsons = Jsons(tempstaSet);
         return CommonResult.success(jsons);
-
     }
 
 
@@ -1519,7 +1573,10 @@ public class GetArrivingReservationController {
      */
     @ApiOperation(value = "2.44 同住客整体退房")
     @RequestMapping(value = "/GuestRemoteCheckOut1")
-    public CommonResult<?> GuestRemoteCheckOut1(String resno,String accnt, String masterremark, String billremark, String cardno, String expiry, String pccode, String
+    public CommonResult<?> GuestRemoteCheckOut1(String resno,String accnt,
+                                                String masterremark, String billremark,
+                                                String cardno,
+                                                String expiry, String pccode, String
             amount, String foliono) {
 
         String tom = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -1541,17 +1598,18 @@ public class GetArrivingReservationController {
         final XRHotelServiceSoap soap = XRHotels();
         final String check = soap.guestRemoteCheckOut1(tom);
         final String jsons = Jsons(check);
-
         //订单数据留存
-        Reservation reservation=reservationService.getOne(new QueryWrapper<Reservation>().eq("resno",resno));
-        Reservation newReservation= GetOneReservation(resno);
+        Reservation reservation=reservationService.getOne(new QueryWrapper<Reservation>().eq("accnt",accnt));
+        System.out.println("reservation:"+reservation);
+        Reservation newReservation= GetOneReservation(accnt);
+        System.out.println("newReservation:"+newReservation);
+        System.out.println();
         if (reservation==null){
             reservationService.save(newReservation);
             System.out.println(newReservation);
         }else{
             newReservation.setId(reservation.getId());
             reservationService.updateById(newReservation);
-            System.out.println(newReservation);
         }
         return CommonResult.success(jsons);
 

@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -58,6 +59,22 @@ public class Thepublic {
         return race.getRaceid();
     }
 
+
+    @ApiOperation(value = "公安旅店录入信息接口退房", httpMethod = "GET")
+    @RequestMapping(value = "/inforCheckOutOrUpdate", method = RequestMethod.GET)
+    public R inforCheckOutOrUpdate(String resno,String OPERATETYPE) throws Exception {
+        List<Reservation> list=reservationService.list(new QueryWrapper<Reservation>().eq("resno",resno));
+        if (list!= null){
+            for (Reservation reservation : list){
+                String imgurl="D:\\wentongimage\\"+reservation.getIdno()+".jpg";
+                information(imgurl,"ID",reservation.getIdno(),reservation.getAccnt(),OPERATETYPE);// 0 入住 1 退房 2修改
+            }
+            return R.ok();
+        }else{
+            return R.error("未查询到该订单的信息");
+        }
+    }
+
     /**
      * @param imgurl       照片
      * @param cardType     证件类型
@@ -66,7 +83,7 @@ public class Thepublic {
      */
     @ApiOperation(value = "公安旅店录入信息接口", httpMethod = "GET")
     @RequestMapping(value = "/information", method = RequestMethod.GET)
-    public R information(String imgurl, String cardType, String idEntityCard,String accnt) throws Exception {
+    public R information(String imgurl, String cardType, String idEntityCard,String accnt,String OPERATETYPE) throws Exception {
 
         String path = "D:\\img\\";//本地xml文件的路径
         String pathname;
@@ -75,7 +92,6 @@ public class Thepublic {
         String uuid = UuidUtils.getUUID();
         pathname = uuid + ".tmp";
         fullpath = path + pathname;
-        System.out.println("fullpath:"+fullpath);
         File filename = new File(fullpath);
         try {
             if (!filename.exists()) {
@@ -91,7 +107,6 @@ public class Thepublic {
         clientele user = new clientele();
         Reservation reservation = GetArrivingReservationController.GetOneReservation(accnt);
         //Reservation reservation=reservationService.getOne(new QueryWrapper<Reservation>().eq("accnt",accnt));
-        System.out.println("reservation:"+reservation);
         if (reservation == null ) {
             return R.error("信息为空无法录入");
         }
@@ -152,13 +167,21 @@ public class Thepublic {
         if(race==null || "".equals(race)){
             race="01";//默认汉族
         }
-        user.setENTER_TIME(checkintime);//入住时间
+        SimpleDateFormat formats = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+        Date date=new Date();
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.MINUTE,calendar.get(Calendar.MINUTE)-30);
+        date=calendar.getTime();
+        String nowDate=formats.format(date);
+
+        user.setENTER_TIME(nowDate);//入住时间
         user.setEXIT_TIME(checkouttime);//离店时间
         user.setBIRTHDAY(birthdaytime);//出生日期
         user.setFLAG("CHINESE");
-        user.setCREATE_TIME(formatter2.format(new Date()));
-        user.setID(UuidUtils.getUUID());
-        user.setOPERATETYPE("0");//对该旅客的操作类型 只有入住
+        user.setCREATE_TIME(nowDate+":00");
+        user.setID(accnt);
+        user.setOPERATETYPE(OPERATETYPE);//对该旅客的操作类型 只有入住
         user.setROOM_NO(reservation.getRoomno());//房间号
         user.setNAME(reservation.getName());//入住人姓名
         user.setSEX(reservation.getSex());//性别
@@ -170,7 +193,6 @@ public class Thepublic {
         {
             reservation.setStreet("无");
         }
-        System.out.println("地址："+reservation.getStreet());
         user.setADDRDETAIL(reservation.getStreet());//地址
         //user.setADDRESS(reservation.getStreet());
         user.setCREDITCARD_NO(" ");//旅客信用卡号 可以为空
@@ -179,12 +201,11 @@ public class Thepublic {
 
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(fullpath)),"utf-8"));
         String dataXml = JaxbUtil.convertToXml(user);
-        System.out.println("dataXml!"+dataXml);
         out.write(dataXml); // \r\n即为换行
         out.flush();
         out.close(); // 最后记得关闭文件
         File parentDir = new File("\\\\10.10.4.31\\exchange\\data");  //部署时需要修改IP地址
-        //File parentDir = new File("D:\\data");  //部署时需要修改IP地址
+        //File parentDir = new File("\\\\10.10.4.31\\data");  //部署时需要修改IP地址
         File targetpath = new File(parentDir, uuid + ".tmp");
         SAXReader reader = new SAXReader();
         Document read = reader.read(fullpath);

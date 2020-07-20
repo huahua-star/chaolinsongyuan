@@ -1,6 +1,7 @@
 package com.utils;
 
 import com.entity.Bill;
+import com.entity.Reservation;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.itextpdf.text.pdf.draw.DottedLineSeparator;
@@ -16,36 +17,6 @@ import java.util.Date;
 import java.util.Map;
 
 public class pdfReport {
-
-        // main测试
-        public static void main(String[] args) throws Exception {
-            try {
-                // 1.新建document对象
-                Document document = new Document(PageSize.A4);// 建立一个Document对象
-
-                // 2.建立一个书写器(Writer)与document对象关联
-                File file = new File("D:\\PDFDemo.pdf");
-                file.createNewFile();
-                PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(file));
-                //writer.setPageEvent(new Watermark("HELLO ITEXTPDF"));// 水印
-                //writer.setPageEvent(new MyHeaderFooter());// 页眉/页脚
-                // 3.打开文档
-                document.open();
-                document.addTitle("Title@PDF-Java");// 标题
-                document.addAuthor("Author@umiz");// 作者
-                document.addSubject("Subject@iText pdf sample");// 主题
-                document.addKeywords("Keywords@iTextpdf");// 关键字
-                document.addCreator("Creator@umiz`s");// 创建者
-
-                // 4.向文档中添加内容
-                //new pdfReport().generatePDF(document);
-
-                // 5.关闭文档
-                document.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
 
         // 定义全局的字体静态变量
         private static Font titlefont;
@@ -69,7 +40,66 @@ public class pdfReport {
             }
         }
 
-        // 生成PDF文件
+        // 生成订单PDF文件
+        public void generateReservationPDF(Document document, ArrayList<Reservation> list, String month, String total,String imgUrl) throws Exception {
+            Paragraph paragraph = new Paragraph("自助机"+month+"订单", titlefont);
+            paragraph.setAlignment(1); //设置文字居中 0靠左   1，居中     2，靠右
+            paragraph.setIndentationLeft(12); //设置左缩进
+            paragraph.setIndentationRight(12); //设置右缩进
+            paragraph.setFirstLineIndent(24); //设置首行缩进
+            paragraph.setLeading(30f); //行间距
+            paragraph.setSpacingAfter(15f);
+            PdfPTable table2 = createTable(new float[] { 130, 160,120,120,130,120,120,120,120,120});
+            //table.addCell(createCell("美好的一天", headfont, Element.ALIGN_LEFT, 6, false));
+            table2.addCell(createCell("订单号", keyfont, Element.ALIGN_CENTER));
+            table2.addCell(createCell("账号", keyfont, Element.ALIGN_CENTER));
+            table2.addCell(createCell("姓名", keyfont, Element.ALIGN_CENTER));
+            table2.addCell(createCell("入住时间", keyfont, Element.ALIGN_CENTER));
+            table2.addCell(createCell("离店时间", keyfont, Element.ALIGN_CENTER));
+            table2.addCell(createCell("房型", keyfont, Element.ALIGN_CENTER));
+            table2.addCell(createCell("房间号", keyfont, Element.ALIGN_CENTER));
+            table2.addCell(createCell("证件号码", keyfont, Element.ALIGN_CENTER));
+            table2.addCell(createCell("手机号", keyfont, Element.ALIGN_CENTER));
+            table2.addCell(createCell("订单状态", keyfont, Element.ALIGN_CENTER));
+
+            for (int i=0;i<list.size();i++){
+                table2.addCell( createCellBottomBoder(list.get(i).getResno(), keyfont, Element.ALIGN_CENTER,0.5f));
+                table2.addCell( createCellBottomBoder(list.get(i).getAccnt(), keyfont, Element.ALIGN_CENTER,0.5f));
+                table2.addCell( createCellBottomBoder(list.get(i).getName(), keyfont, Element.ALIGN_CENTER,0.5f));
+                table2.addCell( createCellBottomBoder(list.get(i).getArrival(), keyfont, Element.ALIGN_CENTER,0.5f));
+                table2.addCell( createCellBottomBoder(list.get(i).getDeparture(), keyfont, Element.ALIGN_CENTER,0.5f));
+                table2.addCell( createCellBottomBoder(list.get(i).getRoomtypename(), keyfont, Element.ALIGN_CENTER,0.5f));
+                table2.addCell( createCellBottomBoder(list.get(i).getRoomno(), keyfont, Element.ALIGN_CENTER,0.5f));
+                table2.addCell( createCellBottomBoder(list.get(i).getIdno(), keyfont, Element.ALIGN_CENTER,0.5f));
+                table2.addCell( createCellBottomBoder(list.get(i).getPhone(), keyfont, Element.ALIGN_CENTER,0.5f));
+                table2.addCell( createCellBottomBoder(list.get(i).getSta(), keyfont, Element.ALIGN_CENTER,0.5f));
+            }
+
+            table2.addCell( createCellBottomBoderCospan("合计", keyfont, Element.ALIGN_RIGHT,0.7f,3));
+            table2.addCell( createCellBottomBoderCospan("Total", keyfont, Element.ALIGN_CENTER,0.7f,2));
+            table2.addCell( createCellBottomBoder(total, keyfont, Element.ALIGN_CENTER,0.7f));
+            table2.addCell( createCellBottomBoderCospan("", keyfont, Element.ALIGN_LEFT,0.7f,2));
+            table2.addCell( createCellBottomBoder("", keyfont, Element.ALIGN_LEFT,0.7f));
+            table2.addCell( createCellBottomBoder("", keyfont, Element.ALIGN_CENTER,0.7f));
+
+
+            // 添加图片
+            Image image = Image.getInstance(imgUrl);
+            image.setAlignment(Image.ALIGN_CENTER);
+            image.scalePercent(8); //依照比例缩放
+            image.setSpacingAfter(10f);
+
+            document.add(image);
+            document.add(paragraph);
+            document.add(table2);
+
+
+
+        }
+
+
+
+        // 生成账单PDF文件
         public void generatePDF(Document document, String imgUrl, Map<String,String> map, ArrayList<Bill> list,String totalDebit,String totalPaid,String balance) throws Exception {
             // 段落
             Paragraph paragraph = new Paragraph("朝林松應酒店", titlefont);
@@ -93,7 +123,7 @@ public class pdfReport {
             // 添加图片
             Image image = Image.getInstance(imgUrl);
             image.setAlignment(Image.ALIGN_CENTER);
-            image.scalePercent(40); //依照比例缩放
+            image.scalePercent(8); //依照比例缩放
             image.setSpacingAfter(10f);
             // 表格
             PdfPTable table = createTable(new float[] { 130, 160,120,120});

@@ -29,6 +29,19 @@ public class PictureController {
     private String timeImgUrl;
 
 
+
+    @ApiOperation(value = "base64ToImgTest", notes = "base64ToImgTest")
+    @GetMapping(value = "/base64ToImgTest")
+    public String base64ToImgTest(String filePath) {
+        String base64=getImgStr(filePath);
+        String imgurl=null;
+        imgurl=BASE64CodeToBeImage(base64,"D:\\image","jpg");
+        System.out.println("imgurl:"+imgurl);
+        return imgurl;
+    }
+
+
+
     @ApiOperation(value = "base64ToImg", notes = "base64ToImg")
     @PostMapping(value = "/base64ToImg")
     public String base64ToImg(@RequestBody String base64) {

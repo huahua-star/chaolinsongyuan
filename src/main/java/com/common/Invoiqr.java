@@ -47,13 +47,15 @@ public class Invoiqr {
 		map.put("totalAmount", amount);
 		List<Map> orderItems = new ArrayList<Map>();
 		Map map1 = new HashMap();
-		map1.put("name", "住店");
+		map1.put("name", "住店消费");
 		map1.put("taxRate", 0.06);
 		map1.put("amount", amount);
-		map1.put("catalogCode", "5010199000000000000");
+		//map1.put("catalogCode", "5010199000000000000");
+		map1.put("catalogCode", "3070402000000000000");
 		orderItems.add(map1);
 		map.put("orderItems", orderItems);
 		String param = JSON.toJSONString(map);
+		System.out.println("param:"+param);
 		String sign = CertificateUtils.signToBase64(param.getBytes(encode), keyStorePath, keyStoreAbner,
 				keyStorePassWord);
 		Map<String, String> vars = new HashMap<String, String>();
@@ -61,10 +63,14 @@ public class Invoiqr {
 		vars.put("cmdName", URLEncoder.encode("chinaeinv.api.order.v11.kp_async", encode));
 		vars.put("sign", URLEncoder.encode(sign, encode));
 		String responseJson = HttpUtil.doPost(facadeUrl, vars, param, 10000, 10000);
+		System.out.println("response:"+responseJson);
 		ResponseData responseData = JSON.parseObject(responseJson, ResponseData.class);
-		String urlCode = "http://www.chinaeinv.com:980/scancode/init?orderNo=" + orderNo + "&scanCodeKey=" + orderNo
-				+ "&taxpayerCode=" + taxpayerCode;
-        System.out.println("urlCode"+urlCode);
+		/*String urlCode = "http://www.chinaeinv.com:980/scancode/init?orderNo=" + orderNo + "&scanCodeKey=" + orderNo
+				+ "&taxpayerCode=" + taxpayerCode;测试*/
+		/*String urlCode = "http://www.chinaeinv.com/scancode/init?orderNo=" + orderNo + "&scanCodeKey=" + orderNo
+				+ "&taxpayerCode=" + taxpayerCode;*/
+		String urlCode = "http://www.chinaeinv.com/scancode/"+taxpayerCode+"/"+orderNo+"/"+orderNo;
+        System.out.println("urlCode:"+urlCode);
 		/*File file = new File(qrDir);
 		if (!file.exists()) {
 			file.mkdir();
@@ -92,7 +98,7 @@ public class Invoiqr {
 	public  String quiry_order(String orderNo,String appCode,String taxpayerCode,String keyStorePath,
                                String keyStoreAbner,String keyStorePassWord,String facadeUrl) throws Exception {
 		Map map = new HashMap();
-		map.put("orderNo", "db4584cf482a48b59f295a3567b33908");
+		map.put("orderNo", orderNo);
 		map.put("taxpayerCode", taxpayerCode);
 		String param = JSON.toJSONString(map);
 		String sign = CertificateUtils.signToBase64(param.getBytes(encode), keyStorePath, keyStoreAbner,

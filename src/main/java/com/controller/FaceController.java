@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +23,8 @@ import java.util.Map;
 public class FaceController {
 
     private static String url="http://10.10.130.250:59000/hesp/v1.0.0/api/checkIn/face";
+    //private static String url="http://static.dalitek.tech:59000/hesp/v1.0.0/api/checkIn/face";
+
 
     /**
      * 人脸图片传输
@@ -30,17 +33,16 @@ public class FaceController {
     @GetMapping(value = "/faceSend")
     public Result<Object> faceSend(String roomNum,String idCard,String facePath) throws Exception {
         Result<Object> result = new Result<>();
-        System.out.println("facePath:"+facePath);
-        String face= FileCodeUtil.encodeBase64File(facePath);
-        System.out.println("face:"+face);
+        String face=PictureController.getImgStr(facePath);
+        //FileCodeUtil.encodeBase64File(facePath);
         Map<String,String> map=new HashMap<>();
         map.put("roomNum",roomNum);
         map.put("idCard",idCard);
-        map.put("face",face);
+        map.put("face",URLEncoder.encode(face, "utf8"));//
         Map<String,String> paramMap=map;
         String param= HttpUtil.getMapToString(paramMap);
         String postUrl=url;
-        String returnResult= HttpUtil.sendPost(url,param);
+        String returnResult= HttpUtil.sendPostFace(url,param);
         System.out.println("returnResult:"+returnResult);
         JSONObject jsonObj = JSONObject.parseObject(returnResult);
         String code=jsonObj.getString("code");
