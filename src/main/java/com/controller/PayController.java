@@ -740,7 +740,7 @@ public class PayController {
                 tbl.setPreOrderid(orderId);
                 tbl.setPaymethod("2");
                 tbl.setRoomnum(roomNum);
-                tbl.setCreateTime(thisTime);
+                tbl.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
                 tbl.setCardno(cardNo);
                 tbl.setState("2");
                 switch (dealType){

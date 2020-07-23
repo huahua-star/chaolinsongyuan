@@ -119,8 +119,6 @@ public class CardController {
             // 检测发卡机是否有卡
             isEmpty = check(3, 0x38);
             if (isEmpty) {
-                // 发卡失败
-                log.info("发卡失败失败数据加入数据库中");
                 log.info("sendCard()方法结束return:{卡箱已空}");
                 sendEmailNoCard(cardEmail);
                 return SetResultUtil.setErrorMsgResult(result, "发卡机卡箱已空");
