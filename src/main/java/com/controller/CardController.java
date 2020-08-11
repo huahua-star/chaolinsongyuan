@@ -102,6 +102,15 @@ public class CardController {
         rabbitHelper.startThread(this.rabbitTemplate,cardQueue,cardStr);
     }
 
+    @GetMapping(value = "/testSendOne")
+    public Result<Object> testSendOne() throws InterruptedException {
+        // 打开发卡机
+        K7X0Util.open(comHandle);
+        Thread.sleep(2000);
+        K7X0Util.send();
+        return Result.ok("成功");
+    }
+
 
     @GetMapping(value = "/checks")
     public Result<Object> checks() {
@@ -111,11 +120,13 @@ public class CardController {
             // 打开发卡机
             log.info("检测发卡机是否有卡");
             K7X0Util.open(comHandle);
+            Thread.sleep(2000);
             // 检测发卡机是否预空
             boolean isEmpty = check(2, 0x31);
             if (isEmpty) {
                 log.info("发卡机卡箱预空,即将无卡");
             }
+            Thread.sleep(2000);
             // 检测发卡机是否有卡
             isEmpty = check(3, 0x38);
             if (isEmpty) {
@@ -225,6 +236,7 @@ public class CardController {
                 // 发卡失败
                 log.info("发卡失败失败数据加入数据库中");
                 log.info("sendCard()方法结束return:{卡箱已空}");
+                sendEmailNoCard(cardEmail);
                 return SetResultUtil.setErrorMsgResult(result, "发卡机卡箱已空");
             }
             while (check(3, 0x31)) {
@@ -247,6 +259,8 @@ public class CardController {
                     //写卡成功
                     //发送到收卡位置
                     K7X0Util.sendCardToTake(comHandle);
+                    log.info("打印小票需要的数据");
+                    Thread.currentThread().sleep(1000);
                 }else{
                     K7X0Util.regainCard(comHandle);
                     return SetResultUtil.setExceptionResult(result, "写卡失败");
@@ -256,6 +270,7 @@ public class CardController {
             return SetResultUtil.setSuccessResult(result, "发卡成功");
         } catch (Exception e) {
             log.error("sendCard()出现异常error:{}", e.getMessage());
+            K7X0Util.regain();
             return SetResultUtil.setExceptionResult(result, "sendCard");
         }
     }
@@ -268,18 +283,47 @@ public class CardController {
     @GetMapping(value = "/Recoverycard")
     public Result<Object> Recoverycard() throws InterruptedException {
         Result<Object> result = new Result<>();
-        log.info("进入sendCard()方法");
+        log.info("进入Recoverycard()方法");
         // 回收到发卡箱
         Boolean flag = K7X0Util.regainCard(comHandle);
         if (!flag) {
             return SetResultUtil.setErrorMsgResult(result, "退卡失败");
         }
+        Thread.sleep(2000);
         // 将卡片发送到读卡位置
-        K7X0Util.sendToRead(comHandle);
+        int key=K7X0Util.sendToReadToReturn(comHandle);
         //读卡
-        result=ReadCard();
-        return result;
+        if (0 == key){
+            result=ReadCard();
+            if(result.getCode()==200){
+                return  result;
+            }else{
+                return ReadCard();
+            }
+        }else{
+            return Result.error("失败");
+        }
     }
+
+
+    /**
+     * testOpenAndClose
+     */
+    @ApiOperation(value = "testOpenAndClose", notes = "testOpenAndClose")
+    @GetMapping(value = "/testOpenAndClose")
+    public Result<Object> testOpenAndClose() {
+        System.out.println("打开发卡机串口");
+        if(!K7X0Util.open(comHandle)){
+            System.out.println("发卡器串口打开失败+=========>com:"+comHandle);
+            return Result.error("发卡机串口打开失败");
+        }
+        System.out.println("发卡机打开串口成功");
+        System.out.println("关闭发卡机串口");
+        K7X0Util.colse(K7X0Util.ComHandle);
+        return Result.ok("成功");
+    }
+
+
 
     /**
      *  从读卡位置发到取卡位置
@@ -445,6 +489,7 @@ public class CardController {
     @GetMapping(value = "/ReadCard")
     public Result<Object> ReadCard(){
         Result<Object> results = new Result<Object>();
+        log.info("进入读卡。");
         ComThread.InitSTA();
         int Port=4;
         String res="";
@@ -459,6 +504,7 @@ public class CardController {
             Dispatch myCom = (Dispatch) pp.getObject(); //生成一个对象
             Variant result = Dispatch.call( myCom, "ReadCard",Port,CardID,CardNo,RoomNo,EndDate) ;
             res=result.toString();
+            log.info("读卡返回res:"+res);
             if (res.equals("0")){
                 System.out.println("RoomNo:"+RoomNo.toString().substring(RoomNo.toString().length()-4));
                 System.out.println("EndDate:"+EndDate.toString());

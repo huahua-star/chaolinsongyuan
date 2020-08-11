@@ -61,6 +61,9 @@ public class GetArrivingReservationController {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    @Autowired
+    private OperationRecordService operationRecordService;
+
     /**
      * 修改自助机留存订单的 状态
      */
@@ -443,6 +446,15 @@ public class GetArrivingReservationController {
                 System.out.println(reservation);
             }
         }
+
+        OperationRecord operationRecord=new OperationRecord();
+        operationRecord.setName(reservation.getName());
+        operationRecord.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        operationRecord.setOperation("CHECKIN");
+        operationRecord.setOperationDes("账号为:"+reservation.getAccnt()+"，姓名为:"+reservation.getName()+"的客人，在"+operationRecord.getCreateTime()+"在自助机办理入住。");
+        operationRecord.setResno(reservation.getAccnt());
+        operationRecordService.save(operationRecord);
+
         return CommonResult.success(jsonData);
 
     }
@@ -505,6 +517,14 @@ public class GetArrivingReservationController {
             reservationService.updateById(newReservation);
             System.out.println(newReservation);
         }
+
+        OperationRecord operationRecord=new OperationRecord();
+        operationRecord.setName(newReservation.getName());
+        operationRecord.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        operationRecord.setOperation("CHECKOUT");
+        operationRecord.setOperationDes("账号为:"+newReservation.getAccnt()+"，姓名为:"+newReservation.getName()+"的客人，在"+operationRecord.getCreateTime()+"在自助机办理退房。");
+        operationRecord.setResno(newReservation.getAccnt());
+        operationRecordService.save(operationRecord);
         return CommonResult.success("退房成功");
     }
 
@@ -1014,6 +1034,21 @@ public class GetArrivingReservationController {
         final XRHotelServiceSoap soap = XRHotels();
         final String s = soap.reservation(tom);
         final String jsons = Jsons(s);
+
+        com.alibaba.fastjson.JSONObject object=JSON.parseObject(jsons);
+        com.alibaba.fastjson.JSONObject resultObj=object.getJSONObject("response");
+        String r=resultObj.getString("result");
+        if ("0".equals(r)) {
+            com.alibaba.fastjson.JSONObject items = resultObj.getJSONObject("items");
+            Reservation reservation = items.toJavaObject(Reservation.class);
+            OperationRecord operationRecord = new OperationRecord();
+            operationRecord.setName(reservation.getName());
+            operationRecord.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+            operationRecord.setOperation("CREATE");
+            operationRecord.setOperationDes("账号为:" + reservation.getAccnt() + "，姓名为:" + reservation.getName() + "的客人，在" + operationRecord.getCreateTime() + "在自助机生成订单。");
+            operationRecord.setResno(reservation.getAccnt());
+            operationRecordService.save(operationRecord);
+        }
         return CommonResult.success(jsons);
 
     }
@@ -1132,6 +1167,15 @@ public class GetArrivingReservationController {
             reservationService.updateById(newReservation);
             System.out.println(newReservation);
         }
+
+        OperationRecord operationRecord=new OperationRecord();
+        operationRecord.setName(newReservation.getName());
+        operationRecord.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        operationRecord.setOperation("UPDATE");
+        operationRecord.setOperationDes("账号为:"+newReservation.getAccnt()+"，姓名为:"+newReservation.getName()+"的客人，在"+operationRecord.getCreateTime()+"在自助机续住订单。");
+        operationRecord.setResno(newReservation.getAccnt());
+        operationRecordService.save(operationRecord);
+
 
         return CommonResult.success(jsons);
 
@@ -1384,6 +1428,27 @@ public class GetArrivingReservationController {
         final XRHotelServiceSoap soap = XRHotels();
         final String nobill = soap.guestCheckOutNobill(tom);
         final String jsons = Jsons(nobill);
+
+        //订单数据留存
+        Reservation reservation=reservationService.getOne(new QueryWrapper<Reservation>().eq("accnt",accnt));
+        Reservation newReservation= GetOneReservation(accnt);
+        if (reservation==null){
+            reservationService.save(newReservation);
+            System.out.println(newReservation);
+        }else{
+            newReservation.setId(reservation.getId());
+            reservationService.updateById(newReservation);
+            System.out.println(newReservation);
+        }
+
+        OperationRecord operationRecord=new OperationRecord();
+        operationRecord.setName(newReservation.getName());
+        operationRecord.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        operationRecord.setOperation("CHECKOUT");
+        operationRecord.setOperationDes("账号为:"+newReservation.getAccnt()+"，姓名为:"+newReservation.getName()+"的客人，在"+operationRecord.getCreateTime()+"在自助机办理退房。");
+        operationRecord.setResno(newReservation.getAccnt());
+        operationRecordService.save(operationRecord);
+
         return CommonResult.success(jsons);
 
     }
@@ -1611,6 +1676,15 @@ public class GetArrivingReservationController {
             newReservation.setId(reservation.getId());
             reservationService.updateById(newReservation);
         }
+
+        OperationRecord operationRecord=new OperationRecord();
+        operationRecord.setName(newReservation.getName());
+        operationRecord.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        operationRecord.setOperation("CHECKOUT");
+        operationRecord.setOperationDes("账号为:"+newReservation.getAccnt()+"，姓名为:"+newReservation.getName()+"的客人，在"+operationRecord.getCreateTime()+"在自助机办理退房。");
+        operationRecord.setResno(newReservation.getAccnt());
+        operationRecordService.save(operationRecord);
+
         return CommonResult.success(jsons);
 
     }

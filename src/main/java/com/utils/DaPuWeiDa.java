@@ -55,7 +55,7 @@ public class DaPuWeiDa {
     public static void printCheckOut(int com,String roomNum,String leave,String wifiMiMa,String qiantaiPhone) throws PortInUseException {
         SerialPort serialPort=SerialPortManager.openPort("COM"+com,115200);
         System.out.println("打开串口成功，"+serialPort.getName());
-        String line1s="欢迎您入住";
+        String line1s="期待您再次光临";
         byte[] line1b = NormalPrint.printtext(line1s, 2, 1, 20);
         String line2s="北京朝林松源酒店";
         byte[] line2b = NormalPrint.printtext(line2s, 2, 1, 20);
@@ -79,7 +79,7 @@ public class DaPuWeiDa {
         byte[] line11b = NormalPrint.printtext(line11s, 2, 1, 10);
         byte[] guding3=new byte[]{(byte)0x0d,(byte)0x0a,
                 (byte)0x0d,(byte)0x0a};
-        byte[] buffer = DataUtils.byteArraysToBytes(new byte[][]{line1b, line2b, line3b, line4b, line5b , line6b,line7b,line8b,line9b,line11b,line10b,guding3});
+        byte[] buffer = DataUtils.byteArraysToBytes(new byte[][]{line1b, line2b, line3b, line4b, line5b , line6b,line7b,line8b,line9b,line11b,guding3});
         SerialPortManager.sendToPort(serialPort,buffer);//打印
         SerialPortManager.closePort(serialPort);
         System.out.println("关闭串口成功");
@@ -152,7 +152,7 @@ public class DaPuWeiDa {
         byte[] line14b = NormalPrint.printtext(line14s, 2, 1, 10);
         String line15s="希望您度过美好的一天!";
         byte[] line15b = NormalPrint.printtext(line15s, 2, 1, 10);
-        buffer = DataUtils.byteArraysToBytes(new byte[][]{line9b, line10b, line11b, line12b, line13b,line14b,line15b,guding3});
+        buffer = DataUtils.byteArraysToBytes(new byte[][]{line9b, line10b, line11b, line12b, line13b,line14b,guding3});
         SerialPortManager.sendToPort(serialPort,buffer);//打印
         SerialPortManager.closePort(serialPort);
         System.out.println("关闭串口成功");
