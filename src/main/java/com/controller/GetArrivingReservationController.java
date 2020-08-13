@@ -9,7 +9,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.service.*;
 import com.utils.Base64Img;
+import com.utils.Http.HttpUtil;
 import com.utils.Returned.CommonResult;
+import com.utils.Returned2.Result;
+import com.utils.Returned2.SetResultUtil;
 import com.utils.Returned3.R;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +66,40 @@ public class GetArrivingReservationController {
 
     @Autowired
     private OperationRecordService operationRecordService;
+
+
+
+    /**
+     * 订单留存测试
+     */
+    @ApiOperation(value = "操作记录留存测试",httpMethod = "POST")
+    @RequestMapping(value = "/testOperationRecord", method = RequestMethod.POST)
+    public Result<Object> testOperationRecord(){
+        Result<Object> result = new Result<Object>();
+        OperationRecord operationRecord=operationRecordService.getById("11f0ae0362fef367fbb369728d1b8442");
+        String sendPost= com.alibaba.fastjson.JSONObject.toJSONString(operationRecord);
+        String url="http://192.168.11.1:8099/jeecg-boot/Reservation/ChaoLinOperationSaveOrUpdate";
+        String returnResult= HttpUtil.sendPosts(url,sendPost);
+        System.out.println("returnResult:"+returnResult);
+        return SetResultUtil.setSuccessResult(result,"成功");
+    }
+
+    /**
+     * 订单留存测试
+     */
+    @ApiOperation(value = "订单留存测试",httpMethod = "POST")
+        @RequestMapping(value = "/testSave", method = RequestMethod.POST)
+    public Result<Object> testSave(){
+        Result<Object> result = new Result<Object>();
+        Reservation reservation=reservationService.getOne(new QueryWrapper<Reservation>().eq("resno","123123"));
+        String sendPost= com.alibaba.fastjson.JSONObject.toJSONString(reservation);
+        String url="http://192.168.11.1:8099/jeecg-boot/Reservation/ChaoLinResSaveOrUpdate";
+        String returnResult= HttpUtil.sendPosts(url,sendPost);
+        System.out.println("returnResult:"+returnResult);
+        return SetResultUtil.setSuccessResult(result,"成功");
+    }
+
+
 
     /**
      * 修改自助机留存订单的 状态
