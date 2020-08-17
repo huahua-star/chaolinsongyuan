@@ -1,6 +1,7 @@
 package com.utils;
 
 import com.entity.Bill;
+import com.entity.OperationRecord;
 import com.entity.Reservation;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
@@ -234,6 +235,49 @@ public class pdfReport {
             document.add(paragraph5);
             //document.add(paragraph6);
         }
+    public void generateOperationRecordPDF(Document document, ArrayList<OperationRecord> list, String month, String total, String imgUrl) throws Exception {
+        Paragraph paragraph = new Paragraph("自助机"+month+"操作记录", titlefont);
+        paragraph.setAlignment(1); //设置文字居中 0靠左   1，居中     2，靠右
+        paragraph.setIndentationLeft(12); //设置左缩进
+        paragraph.setIndentationRight(12); //设置右缩进
+        paragraph.setFirstLineIndent(24); //设置首行缩进
+        paragraph.setLeading(30f); //行间距
+        paragraph.setSpacingAfter(15f);
+        PdfPTable table2 = createTable(new float[] { 130, 160,120,120,130});
+        //table.addCell(createCell("美好的一天", headfont, Element.ALIGN_LEFT, 6, false));
+        table2.addCell(createCell("订单号", keyfont, Element.ALIGN_CENTER));
+        table2.addCell(createCell("姓名", keyfont, Element.ALIGN_CENTER));
+        table2.addCell(createCell("操作", keyfont, Element.ALIGN_CENTER));
+        table2.addCell(createCell("操作时间", keyfont, Element.ALIGN_CENTER));
+        table2.addCell(createCell("操作状态", keyfont, Element.ALIGN_CENTER));
+        for (int i=0;i<list.size();i++){
+            table2.addCell( createCellBottomBoder(list.get(i).getResno(), keyfont, Element.ALIGN_CENTER,0.5f));
+            table2.addCell( createCellBottomBoder(list.get(i).getName(), keyfont, Element.ALIGN_CENTER,0.5f));
+            table2.addCell( createCellBottomBoder(list.get(i).getOperation(), keyfont, Element.ALIGN_CENTER,0.5f));
+            table2.addCell( createCellBottomBoder(list.get(i).getCreateTime(), keyfont, Element.ALIGN_CENTER,0.5f));
+            table2.addCell( createCellBottomBoder(list.get(i).getState().equals("1")?"成功":"失败", keyfont, Element.ALIGN_CENTER,0.5f));
+        }
+
+        table2.addCell( createCellBottomBoderCospan("合计", keyfont, Element.ALIGN_RIGHT,0.7f,2));
+        table2.addCell( createCellBottomBoderCospan("Total", keyfont, Element.ALIGN_CENTER,0.7f,2));
+        table2.addCell( createCellBottomBoder(total, keyfont, Element.ALIGN_CENTER,0.7f));
+
+
+
+        // 添加图片
+        Image image = Image.getInstance(imgUrl);
+        image.setAlignment(Image.ALIGN_CENTER);
+        image.scalePercent(8); //依照比例缩放
+        image.setSpacingAfter(10f);
+
+        document.add(image);
+        document.add(paragraph);
+        document.add(table2);
+
+    }
+
+
+
 
         /*// 直线
             Paragraph p1 = new Paragraph();

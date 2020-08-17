@@ -53,5 +53,23 @@ public class HotelSetTable {
     private String checkOutNameEng;
     //续住 英文
     private String continueLiveNameEng;
+
+    //有订单页面的按钮颜色
+    private String checkInButtonColor;
+    //登记表同住人按钮颜色
+    private String liveWithButtonColor;
+    //登记表继续的按钮颜色
+    private String continueButtonColor;
+    //续房的按钮颜色
+    private String xufangButtonColor;
+    //退房的按钮颜色
+    private String tuifangButtonColor;
+
+    //登记表页面描述字段
+    private String registrationDescription;
+    //登记表页面英文描述字段
+    private String registrationDescriptionEng;
+    //首页模块颜色
+    private String homePageModuleColor;
 }
 

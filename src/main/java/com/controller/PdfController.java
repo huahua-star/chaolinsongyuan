@@ -1,15 +1,13 @@
 package com.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.entity.Bill;
-import com.entity.HotelSetTable;
-import com.entity.Reservation;
-import com.entity.WestSoftBill;
+import com.entity.*;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPageEvent;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.events.PdfPageEventForwarder;
 import com.lowagie.text.HeaderFooter;
+import com.service.OperationRecordService;
 import com.service.ReservationService;
 import com.utils.EmailUtil;
 import com.utils.MyHeaderFooter;
@@ -44,8 +42,12 @@ public class PdfController {
 
     @Value("${pdfUrl}")
     private String pdfUrl;
+
     @Value("${reservationMonthUrl}")
     private String reservationMonthUrl;
+
+    @Value("${operRecordMonthUrl}")
+    private String operRecordMonthUrl;
 
     @Value("${logoimgUrl}")
     private String logoimgUrl;
@@ -73,6 +75,9 @@ public class PdfController {
 
     @Autowired
     private ReservationService reservationService;
+
+    @Autowired
+    private OperationRecordService operationRecordService;
 
     /**
      * 生成账单PDF
@@ -221,8 +226,55 @@ public class PdfController {
             return Result.error("失败");
         }
     }
+
+    /*
+     * 生成自助机每月生成操作记录pdf
+     */
+    @ApiOperation(value = "生成自助机每月生成操作记录pdf")
+    @RequestMapping(value = "/createOperRecordMonthPdf", method = RequestMethod.GET)
+    public Result<?> createOperRecordMonthPdf() {
+        //获取上月
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM");
+        Date date=new Date();
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.MONTH,calendar.get(Calendar.MONTH)-1);
+        date=calendar.getTime();
+        String month=format.format(date);
+        System.out.println("month:"+month);
+        try {
+            String filePath=operRecordMonthUrl+month+".pdf";
+            System.out.println("filePath:"+filePath);
+            // 1.新建document对象
+            Document document = new Document(PageSize.A4);// 建立一个Document对象
+            // 2.建立一个书写器(Writer)与document对象关联
+            File file = new File(filePath);
+            file.createNewFile();
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(file));
+            PageFooter pageFooter=new PageFooter();
+            writer.setPageEvent(pageFooter);
+            // 3.打开文档
+            document.open();
+            month=new SimpleDateFormat("yyyy-MM").format(date);
+            String beginTime=month+"-01 00:00:00";
+            String endTime=month+"-31 23:59:59";
+            List<OperationRecord> list=operationRecordService.list(new QueryWrapper<OperationRecord>().between("create_time", beginTime,endTime));
+            ArrayList<OperationRecord> operationRecords=(ArrayList<OperationRecord>) list;
+            // 4.向文档中添加内容
+            new pdfReport().generateOperationRecordPDF(document,operationRecords,month,list.size()+"",logoimgUrl);
+            // 5.关闭文档
+            document.close();
+            return Result.ok(filePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("失败");
+        }
+    }
+
+
+
     //@Scheduled(cron = "0 0 1 1 * ?")
-    public void sendEmail(){
+    public void sendEmail() throws InterruptedException {
         log.info("生成订单");
         createReservationMonthPdf();
         log.info("发送邮箱");
@@ -237,7 +289,16 @@ public class PdfController {
         String fileName=format.format(date)+".pdf";
         String filePath=reservationMonthUrl+fileName;
         EmailUtil.send(format.format(date)+"月自助机订单统计",HOST,FROM,filePath,fileName,USER,PWD,format.format(date)+"月自助机订单统计",TOS);
+        Thread.sleep(5000);
+        createOperRecordMonthPdf();
+        filePath=operRecordMonthUrl+fileName;
+        EmailUtil.send(format.format(date)+"月自助机订单统计",HOST,FROM,filePath,fileName,USER,PWD,format.format(date)+"月自助机操作记录统计",TOS);
+
     }
+
+
+
+
 
     public static String getStatus(String status){
         Map<String,String> map=new HashMap<>();
