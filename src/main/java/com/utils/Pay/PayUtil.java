@@ -119,9 +119,9 @@ public class PayUtil {
     public static String sdkBarcodePay(String amount,String total_amount,
                                                    String authCode,String payChannel,String url,int paytype) throws UnsupportedEncodingException {
         Map<String,String> paramMap=new HashMap<>();
-        BigDecimal amountBig=new BigDecimal(amount).multiply(new BigDecimal(100));
+        BigDecimal amountBig=(new BigDecimal(Double.valueOf(amount)).setScale(2, BigDecimal.ROUND_HALF_UP)).multiply(new BigDecimal(100));
         System.out.println("amountBig:"+amountBig);
-        BigDecimal total_amountBig=new BigDecimal(total_amount).multiply(new BigDecimal(100));
+        BigDecimal total_amountBig=(new BigDecimal(Double.valueOf(total_amount)).setScale(2, BigDecimal.ROUND_HALF_UP)).multiply(new BigDecimal(100));
         System.out.println("total_amountBig:"+total_amountBig);
         if (amountBig.toString().contains(".")){
             paramMap.put("amount",amountBig.toString().substring(0,amountBig.toString().length()-3));
@@ -253,7 +253,7 @@ public class PayUtil {
     public static Map sdkCompleteEmp(String orderNo,String txnAmt) throws UnsupportedEncodingException {
         Map<String,String> paramMap=new HashMap<>();
         paramMap.put("orderNo",orderNo);
-        txnAmt=(new BigDecimal(txnAmt).multiply(new BigDecimal(100))).toString();
+        txnAmt=((new BigDecimal(Double.valueOf(txnAmt)).setScale(2, BigDecimal.ROUND_HALF_UP)).multiply(new BigDecimal(100))).toString();
         if (txnAmt.contains(".")){
             paramMap.put("txnAmt",txnAmt.substring(0,txnAmt.length()-3));
         }else{
@@ -299,7 +299,7 @@ public class PayUtil {
     public static Map sdkEmpCancel(String orderNo,String txnAmt) throws UnsupportedEncodingException {
         Map<String,String> paramMap=new HashMap<>();
         paramMap.put("orderNo",orderNo);
-        txnAmt=(new BigDecimal(txnAmt).multiply(new BigDecimal(100))).toString();
+        txnAmt=((new BigDecimal(Double.valueOf(txnAmt)).setScale(2, BigDecimal.ROUND_HALF_UP)).multiply(new BigDecimal(100))).toString();
         if (txnAmt.contains(".")){
             paramMap.put("txnAmt",txnAmt.substring(0,txnAmt.length()-3));
         }else{
@@ -346,7 +346,7 @@ public class PayUtil {
     public static Map sdkComEmpCancel(String orderNo,String txnAmt) throws UnsupportedEncodingException {
         Map<String,String> paramMap=new HashMap<>();
         paramMap.put("orderNo",orderNo);
-        txnAmt=(new BigDecimal(txnAmt).multiply(new BigDecimal(100))).toString();
+        txnAmt=((new BigDecimal(Double.valueOf(txnAmt)).setScale(2, BigDecimal.ROUND_HALF_UP)).multiply(new BigDecimal(100))).toString();
         if (txnAmt.contains(".")){
             paramMap.put("txnAmt",txnAmt.substring(0,txnAmt.length()-3));
         }else{
